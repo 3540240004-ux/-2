@@ -184,6 +184,7 @@ const Gameplay: React.FC<GameplayProps> = ({ level, onComplete, onBack }) => {
     const isGlass = level.id === LevelId.GLASS_MAZE;
     const isSuccess = solutionResult?.success;
     const isDizzy = birdsViewActive && isNight && !isSuccess;
+    const isSnared = birdsViewActive && isNature && !isSuccess;
 
     return (
       <div className={`relative w-full h-[300px] md:h-[500px] rounded-3xl overflow-hidden shadow-inner flex items-center justify-center ${isNight ? 'bg-slate-900' : isNature ? 'bg-emerald-100' : 'bg-blue-50'} transition-all duration-700 ${birdsViewActive ? (isSuccess ? 'brightness-110 saturate-150' : 'grayscale brightness-150 blur-[2px]') : ''} ${isDizzy ? 'animate-dizzy-sway' : ''}`}>
@@ -193,8 +194,16 @@ const Gameplay: React.FC<GameplayProps> = ({ level, onComplete, onBack }) => {
           <div className="absolute inset-0 bg-white/40 animate-blinded-pulse mix-blend-overlay z-10 pointer-events-none" />
         )}
 
+        {/* Grid Snare effect overlay for Aerial Snare difficulty */}
+        {isSnared && (
+          <div className="absolute inset-0 z-10 pointer-events-none overflow-hidden animate-grid-shake">
+            <div className="absolute inset-0 bg-[linear-gradient(to_right,#64748b_1px,transparent_1px),linear-gradient(to_bottom,#64748b_1px,transparent_1px)] bg-[size:30px_30px] opacity-30 animate-grid-closing"></div>
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_30%,rgba(0,0,0,0.4)_100%)]"></div>
+          </div>
+        )}
+
         {/* Isometric representation */}
-        <div className={`relative transform rotate-x-[30deg] rotate-z-[45deg] scale-[1.5] transition-transform duration-500 ${isDizzy ? 'blur-[4px]' : ''}`}>
+        <div className={`relative transform rotate-x-[30deg] rotate-z-[45deg] scale-[1.5] transition-transform duration-500 ${isDizzy ? 'blur-[4px]' : ''} ${isSnared ? 'scale-[1.7]' : ''}`}>
           {isGlass && (
              <div className="flex gap-4">
                 {[1, 2, 3].map(i => (
@@ -287,7 +296,7 @@ const Gameplay: React.FC<GameplayProps> = ({ level, onComplete, onBack }) => {
               </div>
             ) : (
               <div className="bg-red-600 text-white px-6 py-2 rounded-full font-bold flex items-center gap-2 animate-bounce">
-                <AlertTriangle /> {level.id === LevelId.GLASS_MAZE ? '检测到前方有森林！(其实是玻璃反射)' : level.id === LevelId.LIGHT_TRAP ? '迷失在眩光中，无法导航...' : '前方空域不详'}
+                <AlertTriangle /> {level.id === LevelId.GLASS_MAZE ? '检测到前方有森林！(其实是玻璃反射)' : level.id === LevelId.LIGHT_TRAP ? '迷失在眩光中，无法导航...' : '视线被乱线遮挡，前方高度危险！'}
               </div>
             )}
           </div>
@@ -600,6 +609,25 @@ const Gameplay: React.FC<GameplayProps> = ({ level, onComplete, onBack }) => {
         }
         .animate-blinded-pulse {
           animation: blinded-pulse 2.5s ease-in-out infinite;
+        }
+
+        /* Aerial Snare: Grid blocking animation */
+        @keyframes grid-closing {
+          0% { transform: scale(1.2); opacity: 0.1; }
+          50% { transform: scale(0.9); opacity: 0.4; }
+          100% { transform: scale(1.1); opacity: 0.1; }
+        }
+        @keyframes grid-shake {
+          0%, 100% { transform: translate(0, 0); }
+          25% { transform: translate(-2px, 2px); }
+          50% { transform: translate(2px, -2px); }
+          75% { transform: translate(-1px, -1px); }
+        }
+        .animate-grid-closing {
+          animation: grid-closing 4s ease-in-out infinite;
+        }
+        .animate-grid-shake {
+          animation: grid-shake 0.2s linear infinite;
         }
       `}</style>
     </div>
